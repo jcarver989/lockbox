@@ -11,7 +11,9 @@ Library for creating a client-side encrypted password manager. Uses 256-bit encr
 
 ## Is This Safe To Use?
 
-In theory - yes. The larger codebase Lockbox was extracted from (Qwill) underwent a 3rd party design & code audit by Cure53 in early 2019, with favorable results. That being said, know that this particular codebase has not been directly audited and it has some minor changes from the original codebase (mostly converting Flow => TypeScript). Also keep in mind, no system can be guaranteed to be bug free - so proceed at your own risk & get a 3rd party to review your systems if you plan on using this in production.
+In theory - yes. But theory and reality are often quite different.
+
+The larger codebase Lockbox was extracted from (Qwill) underwent a 3rd party design & code audit by Cure53 in early 2019, with favorable results. That being said, know that this particular codebase has not been directly audited and it has some minor changes from the original codebase (mostly converting Flow => TypeScript). Also keep in mind, no system can be guaranteed to be bug free - so proceed at your own risk & get a 3rd party to review your systems if you plan on using this in production.
 
 ### A Note On Encryption Key Generation In Different Runtime Environments
 
