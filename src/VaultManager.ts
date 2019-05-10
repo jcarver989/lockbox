@@ -7,7 +7,7 @@ import { EncryptedVault, Vault } from "./types/vault"
 import { VaultItem } from "./types/vaultItem"
 import { VaultItemEncryptor } from "./VaultItemEncryptor"
 
-export class VaultManager {
+export class VaultManager<T> {
   encryptor: VaultItemEncryptor
   clock: Clock
 
@@ -20,19 +20,19 @@ export class VaultManager {
   }
 
   create(): {
-    vault: Vault
+    vault: Vault<T>
     encryptedVault: EncryptedVault
     vaultKey: EncryptionKey
   } {
     const vaultKey = this.encryptor.generateEncryptionKey()
-    const vault = anEmptyVault()
+    const vault = anEmptyVault<T>()
     const encryptedVault = anEmptyEncryptedVault()
     return { vault, vaultKey, encryptedVault }
   }
 
-  addOrUpdateItem<T>(
+  addOrUpdateItem<U extends T>(
     vault: EncryptedVault,
-    item: VaultItem<T>,
+    item: VaultItem<U>,
     vaultKey: EncryptionKey
   ): EncryptedVault {
     const updatedVault = clone(vault)
@@ -52,9 +52,9 @@ export class VaultManager {
     return updatedVault
   }
 
-  deleteItem<T>(
+  deleteItem<U extends T>(
     vault: EncryptedVault,
-    item: VaultItem<T>,
+    item: VaultItem<U>,
     vaultKey: EncryptionKey
   ): EncryptedVault {
     const updatedVault = clone(vault)
@@ -66,10 +66,10 @@ export class VaultManager {
     return updatedVault
   }
 
-  decrypt(vault: EncryptedVault, vaultKey: EncryptionKey): Vault {
+  decrypt(vault: EncryptedVault, vaultKey: EncryptionKey): Vault<T> {
     const { hmacOfItems, lastModified } = vault
 
-    const items = this.encryptor.decryptItemsWithHMAC(
+    const items = this.encryptor.decryptItemsWithHMAC<T>(
       vault.items,
       vaultKey,
       lastModified,
@@ -78,7 +78,7 @@ export class VaultManager {
 
     const sharedItems = vault.sharedItems.map(
       ({ itemsOwnerId, itemsOwnerName, items, hmacOfItems, lastModified }) => {
-        const decryptedSharedItems = this.encryptor.decryptItemsWithHMAC(
+        const decryptedSharedItems = this.encryptor.decryptItemsWithHMAC<T>(
           items,
           vaultKey,
           lastModified,

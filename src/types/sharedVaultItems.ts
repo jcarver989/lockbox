@@ -1,9 +1,9 @@
 import { VaultItem, EncryptedVaultItem } from "./vaultItem"
 
-export type SharedVaultItems = {
+export type SharedVaultItems<T> = {
   itemsOwnerId: string
   itemsOwnerName: string
-  items: Array<VaultItem<any>>
+  items: Array<VaultItem<T>>
 }
 
 export type EncryptedSharedVaultItems = {

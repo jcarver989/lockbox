@@ -24,8 +24,8 @@ export class VaultItemEncryptor {
     return this.encryptor.generateKeyPair()
   }
 
-  encrypt(
-    item: VaultItem<any>,
+  encrypt<T>(
+    item: VaultItem<T>,
     keyEncryptionKey: EncryptionKey
   ): EncryptedVaultItem {
     const { id, data, encryptionKey } = item
@@ -46,10 +46,10 @@ export class VaultItemEncryptor {
     }
   }
 
-  decrypt(
+  decrypt<T>(
     item: EncryptedVaultItem,
     keyDecryptionKey: EncryptionKey
-  ): VaultItem<any> {
+  ): VaultItem<T> {
     const { id, encryptedKey, encryptedData } = item
     const decryptedKey = JSON.parse(
       this.encryptor.decrypt(
@@ -74,8 +74,8 @@ export class VaultItemEncryptor {
     }
   }
 
-  encryptItemsWithHMAC(
-    items: Array<VaultItem<any>>,
+  encryptItemsWithHMAC<T>(
+    items: Array<VaultItem<T>>,
     keyEncryptionKey: EncryptionKey
   ): {
     encryptedItems: Array<EncryptedVaultItem>
@@ -92,12 +92,12 @@ export class VaultItemEncryptor {
     }
   }
 
-  decryptItemsWithHMAC(
+  decryptItemsWithHMAC<T>(
     items: Array<EncryptedVaultItem>,
     keyDecryptionKey: EncryptionKey,
     lastModified?: number,
     hmac?: string
-  ): Array<VaultItem<any>> {
+  ): Array<VaultItem<T>> {
     if (lastModified != null && hmac != null) {
       const newHmac = this.hmac(items, keyDecryptionKey, lastModified)
       if (!this.encryptor.constantTimeEquals(hmac, newHmac)) {

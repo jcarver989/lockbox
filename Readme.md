@@ -15,17 +15,22 @@ Library for creating a client-side encrypted password manager. Uses 256-bit encr
 import { VaultManager } from "./VaultManager"
 import { aVaultItem } from "./index"
 
-// Create a Vault (make sure you store your vaultKey somewhere safe!)
-const vaultManager = new VaultManager()
+// Given some data you want to store in the Vault
+type MiscAccount = { username: string; password: string }
+type FinancialAccount = MiscAccount & { accountNumber: string }
+type Item = FinancialAccount | MiscAccount
+
+// 1. Create a Vault (make sure you store your vaultKey somewhere safe!)
+const vaultManager = new VaultManager<Item>()
 const { vaultKey, encryptedVault } = vaultManager.create()
 
-// And an item
-const item = aVaultItem(
+// 2. Create an item
+const item = aVaultItem<FinancialAccount>(
   // Give your vault item a unique id
   "id-123",
 
   // Add whatever data you want
-  { name: "foo" },
+  { username: "Mr. Bigglesworth", password: "123", accountNumber: "456" },
 
   // And its own unique encryption key
   // Your item's encryption key will encrypt the data above
@@ -33,7 +38,7 @@ const item = aVaultItem(
   vaultManager.encryptor.generateEncryptionKey()
 )
 
-// Add your item to your vault
+// 3. Add your item to your vault
 const encryptedUpdatedVault = vaultManager.addOrUpdateItem(
   encryptedVault,
   item,
@@ -47,6 +52,11 @@ saveToFile(encryptedUpdatedVault)
 const decryptedVault = vaultManager.decrypt(encryptedUpdatedVault, vaultKey)
 ```
 
+### A note on local state
+
+Note how `VaultManager.addOrUpdateItem` returns an `EncryptedVault` rather than a (decrypted) `Vault` with then new item inside. This is because this library
+assumes you're probably using some kind of client-side state store like `Redux` or `Apollo` that will hold a map of id to decrypted `VaultItem`s - i.e. `{ [key: ItemId]: VaultItem<T> }`. So when you call `addOrUpdateItem` you can just optimistically update your client-side state item map.
+
 ## Encoding Encryption Keys
 
 ```typescript
@@ -54,7 +64,7 @@ import { EncryptionKeyFormatter } from "./EncryptionKeyFormatter"
 import { VaultManager } from "./VaultManager"
 
 // Given a Vault Key
-const vaultManager = new VaultManager()
+const vaultManager = new VaultManager<{}>()
 const { vaultKey } = vaultManager.create()
 
 // You can print it and store it as an SVG QR code

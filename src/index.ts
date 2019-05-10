@@ -6,7 +6,7 @@ import {
   VaultItem
 } from "./types/VaultItem"
 
-export function anEmptyVault(): Vault {
+export function anEmptyVault<T>(): Vault<T> {
   return {
     items: [],
     sharedItems: []

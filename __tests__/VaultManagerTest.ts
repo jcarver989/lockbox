@@ -1,11 +1,11 @@
+import { realClock, stubClock } from "../src/clock"
 import {
   anEmptyEncryptedVault,
   anEmptyVault,
   anEncryptedVaultItem
 } from "../src/index"
-import { StubEncryptor } from "../src/StubEncryptor"
 import { NaClEncryptor } from "../src/NaClEncryptor"
-import { stubClock, realClock } from "../src/clock"
+import { StubEncryptor } from "../src/StubEncryptor"
 import { VaultItem } from "../src/types/vaultItem"
 import { VaultItemEncryptor } from "../src/VaultItemEncryptor"
 import { VaultManager } from "../src/VaultManager"
@@ -15,7 +15,7 @@ test("should create a vault", () => {
     .withEncryptionKeyGenerator(() => "encryption-key-123")
     .withHMACGenerator((message, key) => "hmac-123")
 
-  const vaultManager = new VaultManager(
+  const vaultManager = new VaultManager<StubItem>(
     new VaultItemEncryptor(encryptor),
     stubClock(1000)
   )
@@ -32,7 +32,7 @@ test("should add item to the Vault", () => {
 
   const vaultKey = encryptor.generateEncryptionKey()
 
-  const vaultManager = new VaultManager(
+  const vaultManager = new VaultManager<StubItem>(
     new VaultItemEncryptor(encryptor),
     stubClock(1000)
   )
@@ -55,7 +55,7 @@ test("should delete an item", () => {
 
   const vaultKey = encryptor.generateEncryptionKey()
 
-  const vaultManager = new VaultManager(
+  const vaultManager = new VaultManager<StubItem>(
     new VaultItemEncryptor(encryptor),
     stubClock(1000)
   )
@@ -77,7 +77,7 @@ test("should work with a real implementation", () => {
   // Given we create a "real" Vault
   const encryptor = new NaClEncryptor()
   const itemEncryptor = new VaultItemEncryptor(encryptor)
-  const vaultManager = new VaultManager(itemEncryptor, realClock())
+  const vaultManager = new VaultManager<StubItem>(itemEncryptor, realClock())
   const { vaultKey, encryptedVault } = vaultManager.create()
 
   // And then we add an item to it
@@ -98,9 +98,11 @@ test("should work with a real implementation", () => {
   expect(updatedDecryptedVault.items).toEqual([item])
 })
 
+type StubItem = { name: string }
+
 export function aMiscVaultItem(
   encryptor: VaultItemEncryptor = new VaultItemEncryptor()
-): VaultItem<{ name: string }> {
+): VaultItem<StubItem> {
   return {
     id: "123",
     encryptionKey: encryptor.generateEncryptionKey(),
