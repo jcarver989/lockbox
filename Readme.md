@@ -1,4 +1,4 @@
-# Vault Core
+# Lockbox
 
 Library for creating a client-side encrypted password manager. Uses 256-bit encryption keys with xsalsa20-poly1305.
 
