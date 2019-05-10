@@ -9,18 +9,6 @@ Library for creating a client-side encrypted password manager. Uses 256-bit encr
 - Decryption includes a HMAC check to ensure your Vault items haven't been tampered with or corrupted
 - Helpers to encode your master vault key as a QR code or base-32 string (looks like an old cd license-key) for easy storage.
 
-## Is This Safe To Use?
-
-In theory - yes. But theory and reality are often quite different.
-
-"Safe" also depends on which attack vector(s) you're worried about. If all you're worried about is client-side encrypting your data to protect your cloud data - you should be relatively safe. But if you're worried about somebody obtaining your device and memory dumping it to obtain your keys - a JavaScript library is **not** the way to go.
-
-The larger codebase Lockbox was extracted from (Qwill) underwent a 3rd party design & code audit by Cure53 in early 2019, with favorable results. That being said, know that this particular codebase has not been directly audited and it has some minor changes from the original codebase (mostly converting Flow => TypeScript). Also keep in mind, no system can be guaranteed to be bug free - so proceed at your own risk & get a 3rd party to review your systems if you plan on using this in production.
-
-### A Note On Encryption Key Generation In Different Runtime Environments
-
-tweet-nacl](https://github.com/dchest/tweetnacl-js#random-bytes-generation)) attempts to provide a suitable cryptographic random byte generator in both browser and Node runtimes. However if you plan on using this in other runtimes, like React Native - you must ensure you configure `tweet-nacl` with a suitable cryptographically secure random byte generator. Know that React Native does not provide this out of the box (iOS does however so you can write an RN module to call [`SecRandomCopyBytes`](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)).
-
 ## Usage
 
 ```typescript
@@ -90,6 +78,20 @@ const scannedKey = formatter.fromQRCode(qrCode)
 const stringKey = formatter.toBase32(vaultKey)
 const recoveredKey = formatter.fromBase32(stringKey)
 ```
+
+## Is This Safe To Use?
+
+In theory - yes. But theory and reality are often different.
+
+The larger codebase Lockbox was extracted from (Qwill) underwent a 3rd party design & code audit by Cure53 in early 2019, with favorable results. That being said, know that this particular codebase has not been directly audited and has diverged slightly from the original codebase (mostly converting Flow => TypeScript).
+
+Keep in mind "safe" also depends on which attack vector(s) you're worried about. For example if somebody obtaining your device and stealing keys via a memory dump is a legitimate security concern for you - a JavaScript library is **not** the way to go.
+
+Finally, no system can be guaranteed to be bug free. Proceed at your own risk and get a 3rd party security review of your systems if you plan on using this in production.
+
+### A Note On Encryption Key Generation In Different Runtime Environments
+
+tweet-nacl](https://github.com/dchest/tweetnacl-js#random-bytes-generation)) attempts to provide a suitable cryptographic random byte generator in both browser and Node runtimes. However if you plan on using this in other runtimes, like React Native - you must ensure you configure `tweet-nacl` with a suitable cryptographically secure random byte generator. Know that React Native does not provide this out of the box (iOS does however so you can write an RN module to call [`SecRandomCopyBytes`](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)).
 
 ## Contributing
 
