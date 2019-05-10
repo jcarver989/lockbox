@@ -1,6 +1,7 @@
 import clone from "lodash.clonedeep"
-import { anEmptyVault, anEmptyEncryptedVault } from "./index"
-import { Clock } from "./clock"
+import { Clock, realClock } from "./clock"
+import { anEmptyEncryptedVault, anEmptyVault } from "./index"
+import { NaClEncryptor } from "./NaClEncryptor"
 import { EncryptionKey } from "./types/crypto"
 import { EncryptedVault, Vault } from "./types/vault"
 import { VaultItem } from "./types/vaultItem"
@@ -10,7 +11,10 @@ export class VaultManager {
   encryptor: VaultItemEncryptor
   clock: Clock
 
-  constructor(encryptor: VaultItemEncryptor, clock: Clock) {
+  constructor(
+    encryptor: VaultItemEncryptor = new VaultItemEncryptor(new NaClEncryptor()),
+    clock: Clock = realClock()
+  ) {
     this.encryptor = encryptor
     this.clock = clock
   }
