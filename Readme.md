@@ -91,7 +91,7 @@ Finally, no system can be guaranteed to be bug free. Proceed at your own risk an
 
 ### A Note On Encryption Key Generation In Different Runtime Environments
 
-tweet-nacl](https://github.com/dchest/tweetnacl-js#random-bytes-generation)) attempts to provide a suitable cryptographic random byte generator in both browser and Node runtimes. However if you plan on using this in other runtimes, like React Native - you must ensure you configure `tweet-nacl` with a suitable cryptographically secure random byte generator. Know that React Native does not provide this out of the box (iOS does however so you can write an RN module to call [`SecRandomCopyBytes`](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)).
+[tweet-nacl](https://github.com/dchest/tweetnacl-js#random-bytes-generation) attempts to provide a suitable cryptographic random byte generator in both browser and Node runtimes. However if you plan on using this in other runtimes, like React Native - you must ensure you configure `tweet-nacl` with a suitable cryptographically secure random byte generator. Know that React Native does not provide this out of the box (iOS does however so you can write an RN module to call [`SecRandomCopyBytes`](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)).
 
 ## Contributing
 
