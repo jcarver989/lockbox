@@ -1,6 +1,6 @@
 # Lockbox
 
-Library for creating a client-side encrypted password manager. Uses 256-bit encryption keys with xsalsa20-poly1305.
+Library for creating a client-side encrypted password manager. Uses 256-bit encryption keys with xsalsa20-poly1305. MIT licensed.
 
 ## Features
 
@@ -9,7 +9,15 @@ Library for creating a client-side encrypted password manager. Uses 256-bit encr
 - Decryption includes a HMAC check to ensure your Vault items haven't been tampered with or corrupted
 - Helpers to encode your master vault key as a QR code or base-32 string (looks like an old cd license-key) for easy storage.
 
-## Example Usage
+## Is This Safe To Use?
+
+In theory - yes. The larger codebase Lockbox was extracted from (Qwill) underwent a 3rd party design & code audit by Cure53 in early 2019, with favorable results. That being said, know that this particular codebase has not been directly audited and it has some minor changes from the original codebase (mostly converting Flow => TypeScript). Also keep in mind, no system can be guaranteed to be bug free - so proceed at your own risk & get a 3rd party to review your systems if you plan on using this in production.
+
+### A Note On Encryption Key Generation In Different Runtime Environments
+
+tweet-nacl](https://github.com/dchest/tweetnacl-js#random-bytes-generation)) attempts to provide a suitable cryptographic random byte generator in both browser and Node runtimes. However if you plan on using this in other runtimes, like React Native - you must ensure you configure `tweet-nacl` with a suitable cryptographically secure random byte generator. Know that React Native does not provide this out of the box (iOS does however so you can write an RN module to call [`SecRandomCopyBytes`](https://developer.apple.com/documentation/security/1399291-secrandomcopybytes)).
+
+## Usage
 
 ```typescript
 import { VaultManager } from "./VaultManager"
@@ -52,7 +60,7 @@ saveToFile(encryptedUpdatedVault)
 const decryptedVault = vaultManager.decrypt(encryptedUpdatedVault, vaultKey)
 ```
 
-### A note on local state
+### A Note On Local State
 
 Note how `VaultManager.addOrUpdateItem` returns an `EncryptedVault` rather than a (decrypted) `Vault` with then new item inside. This is because this library
 assumes you're probably using some kind of client-side state store like `Redux` or `Apollo` that will hold a map of id to decrypted `VaultItem`s - i.e. `{ [key: ItemId]: VaultItem<T> }`. So when you call `addOrUpdateItem` you can just optimistically update your client-side state item map.
@@ -78,3 +86,7 @@ const scannedKey = formatter.fromQRCode(qrCode)
 const stringKey = formatter.toBase32(vaultKey)
 const recoveredKey = formatter.fromBase32(stringKey)
 ```
+
+## Contributing
+
+PRs welcome. Make sure to include unit tests and ensure they pass by running `yarn test`
