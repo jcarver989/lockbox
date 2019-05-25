@@ -35,12 +35,15 @@ export class NaClEncryptor implements Encryptor {
     }
   }
 
-  encrypt(message: Uint8Array, encryptionKey: EncryptionKey): EncryptedData {
-    const nonceBytes = randomBytes(secretbox.nonceLength)
-    const encryptedBytes = secretbox(message, nonceBytes, encryptionKey.key)
+  encrypt(
+    message: Uint8Array,
+    encryptionKey: EncryptionKey,
+    nonce: Uint8Array = randomBytes(secretbox.nonceLength)
+  ): EncryptedData {
+    const encryptedBytes = secretbox(message, nonce, encryptionKey.key)
 
     return {
-      nonce: nonceBytes,
+      nonce: nonce,
       cipherText: encryptedBytes
     }
   }

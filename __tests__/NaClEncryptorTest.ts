@@ -1,5 +1,11 @@
-import { decodeUTF8, encodeUTF8 } from "tweetnacl-util"
+import {
+  decodeBase64,
+  encodeBase64,
+  decodeUTF8,
+  encodeUTF8
+} from "tweetnacl-util"
 import { NaClEncryptor } from "../src/NaClEncryptor"
+import { EncryptionKey } from "../src/types/crypto"
 
 test("Should perform symmetric encryption", () => {
   const encryptor = new NaClEncryptor()
@@ -41,4 +47,21 @@ test("should perform asymmetric encryption", () => {
   )
 
   expect(encodeUTF8(decryptedMessage)).toEqual("Hello Bob")
+})
+
+test("should match one of tweet-nacl's secretbox test cases", () => {
+  const encryptor = new NaClEncryptor()
+  const key: EncryptionKey = {
+    algorithm: "xSalsa20Poly1305",
+    key: decodeBase64("sCrgWptNkUcoU2XJDKQeT1M7gLsSVxW+Z+v46nHbEik=")
+  }
+
+  // Test case taken from: https://github.com/dchest/tweetnacl-js/blob/master/test/data/secretbox.random.js
+  const nonce = decodeBase64("4MhQGwxeu+QjiJP4PzHQudpMRDxiwiJj")
+  const msg = decodeBase64("R1NE6e0vrN1oS5LbuI4Bvto=")
+  const cipherText = decodeBase64(
+    "GSn0qNxPfTyAHOkNl25ViM8xm0pr1uekERB+UGZZO1Kd"
+  )
+
+  expect(encryptor.encrypt(msg, key, nonce).cipherText).toEqual(cipherText)
 })
