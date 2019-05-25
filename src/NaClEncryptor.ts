@@ -1,11 +1,5 @@
 import { box, randomBytes, secretbox, verify } from "tweetnacl"
-import hmac from "tweetnacl-auth"
-import {
-  decodeBase64,
-  decodeUTF8,
-  encodeBase64,
-  encodeUTF8
-} from "tweetnacl-util"
+import tweetNaclHmac from "tweetnacl-auth"
 import {
   EncryptedData,
   EncryptionKey,
@@ -23,66 +17,57 @@ export class NaClEncryptor implements Encryptor {
 
   generateEncryptionKey(): EncryptionKey {
     const bytes = randomBytes(secretbox.keyLength)
-    return { key: encodeBase64(bytes), algorithm: this.algorithm }
+    return { key: bytes, algorithm: this.algorithm }
   }
 
   generateKeyPair(): KeyPair {
     const pair = box.keyPair()
     return {
       publicKey: {
-        key: encodeBase64(pair.publicKey),
+        key: pair.publicKey,
         algorithm: this.algorithm
       },
 
       privateKey: {
-        key: encodeBase64(pair.secretKey),
+        key: pair.secretKey,
         algorithm: this.algorithm
       }
     }
   }
 
-  encrypt(message: string, encryptionKey: EncryptionKey): EncryptedData {
-    const keyBytes = decodeBase64(encryptionKey.key)
+  encrypt(message: Uint8Array, encryptionKey: EncryptionKey): EncryptedData {
     const nonceBytes = randomBytes(secretbox.nonceLength)
-    const messageBytes = decodeUTF8(message)
-    const encryptedBytes = secretbox(messageBytes, nonceBytes, keyBytes)
+    const encryptedBytes = secretbox(message, nonceBytes, encryptionKey.key)
 
     return {
-      nonce: encodeBase64(nonceBytes),
-      cipherText: encodeBase64(encryptedBytes)
+      nonce: nonceBytes,
+      cipherText: encryptedBytes
     }
   }
 
   decrypt(
-    message: string,
-    nonce: string,
+    message: Uint8Array,
+    nonce: Uint8Array,
     decryptionKey: EncryptionKey
-  ): string {
-    const messageBytes = decodeBase64(message)
-    const nonceBytes = decodeBase64(nonce)
-    const decryptionKeyBytes = decodeBase64(decryptionKey.key)
-    const decrypted = secretbox.open(
-      messageBytes,
-      nonceBytes,
-      decryptionKeyBytes
-    )
+  ): Uint8Array {
+    const decrypted = secretbox.open(message, nonce, decryptionKey.key)
 
     if (!decrypted) {
       throw new Error("Could not decrypt message")
     }
 
-    return encodeUTF8(decrypted)
+    return decrypted
   }
 
   assymetricEncrypt(
-    message: string,
+    message: Uint8Array,
     theirPublicKey: EncryptionKey,
     myPrivateKey: EncryptionKey
   ): EncryptedData {
-    const messageBytes = decodeUTF8(message)
+    const messageBytes = message
     const nonceBytes = randomBytes(box.nonceLength)
-    const publicKeyBytes = decodeBase64(theirPublicKey.key)
-    const secretKeyBytes = decodeBase64(myPrivateKey.key)
+    const publicKeyBytes = theirPublicKey.key
+    const secretKeyBytes = myPrivateKey.key
 
     const encryptedBytes = box(
       messageBytes,
@@ -92,21 +77,21 @@ export class NaClEncryptor implements Encryptor {
     )
 
     return {
-      nonce: encodeBase64(nonceBytes),
-      cipherText: encodeBase64(encryptedBytes)
+      nonce: nonceBytes,
+      cipherText: encryptedBytes
     }
   }
 
   assymetricDecrypt(
-    message: string,
-    nonce: string,
+    message: Uint8Array,
+    nonce: Uint8Array,
     theirPublicKey: EncryptionKey,
     myPrivateKey: EncryptionKey
-  ): string {
-    const messageBytes = decodeBase64(message)
-    const nonceBytes = decodeBase64(nonce)
-    const publicKeyBytes = decodeBase64(theirPublicKey.key)
-    const privateKeyBytes = decodeBase64(myPrivateKey.key)
+  ): Uint8Array {
+    const messageBytes = message
+    const nonceBytes = nonce
+    const publicKeyBytes = theirPublicKey.key
+    const privateKeyBytes = myPrivateKey.key
 
     const decrypted = box.open(
       messageBytes,
@@ -119,14 +104,14 @@ export class NaClEncryptor implements Encryptor {
       throw new Error("Could not decrypt message")
     }
 
-    return encodeUTF8(decrypted)
+    return decrypted
   }
 
-  constantTimeEquals(a: string, b: string): boolean {
-    return verify(decodeUTF8(a), decodeUTF8(b))
+  constantTimeEquals(a: Uint8Array, b: Uint8Array): boolean {
+    return verify(a, b)
   }
 
-  hmac(message: string, key: EncryptionKey): string {
-    return encodeBase64(hmac(decodeUTF8(message), key.key))
+  hmac(message: Uint8Array, key: EncryptionKey): Uint8Array {
+    return tweetNaclHmac(message, key.key)
   }
 }

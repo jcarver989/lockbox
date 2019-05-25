@@ -1,6 +1,11 @@
 import * as base32 from "hi-base32"
 import QRCode from "qrcode"
-import { EncryptionKey, ENCRYPTION_ALGORITHMS } from "./types/crypto"
+import { decodeBase64, decodeUTF8, encodeBase64 } from "tweetnacl-util"
+import {
+  EncryptionAlgorithm,
+  EncryptionKey,
+  ENCRYPTION_ALGORITHMS
+} from "./types/crypto"
 
 const VERSION_TO_ALGORITHM: { [key: string]: string } = {
   V1: ENCRYPTION_ALGORITHMS.xSalsa20Poly1305
@@ -12,6 +17,25 @@ const ALGORITHM_TO_VERSION: { [key: string]: string } = {
 
 /** Converts an Encryption key to/from various formats - e.g. base32, QRCode etc. */
 export class EncryptionKeyFormatter {
+  static toJSONString(key: EncryptionKey): string {
+    return JSON.stringify({
+      algorithm: key.algorithm,
+      key: encodeBase64(key.key)
+    })
+  }
+
+  static fromJSONString(str: string): EncryptionKey {
+    const {
+      key,
+      algorithm
+    }: { algorithm: EncryptionAlgorithm; key: string } = JSON.parse(str)
+
+    return {
+      algorithm,
+      key: decodeBase64(key)
+    }
+  }
+
   // Base32 is useful as its not case sensitive, making it easy for a human to type in a secret key into their device
   static toBase32(encryptionKey: EncryptionKey): string {
     const key = base32
@@ -26,7 +50,7 @@ export class EncryptionKeyFormatter {
     const [version, ...keyParts] = base32Key.replace(/\s+/g, "").split("-")
     const key = base32.decode(keyParts.join(""))
     return {
-      key,
+      key: decodeUTF8(key),
       algorithm: VERSION_TO_ALGORITHM[version]
     }
   }
