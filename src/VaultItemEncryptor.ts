@@ -59,16 +59,16 @@ export class VaultItemEncryptor {
     keyDecryptionKey: EncryptionKey
   ): VaultItem<T> {
     const { id, encryptedKey, encryptedData } = item
-    const plainTextEncryptionKey = this.encryptor.decrypt(
+    const decryptedKeyBytes = this.encryptor.decrypt(
       encryptedKey.cipherText,
       encryptedKey.nonce,
       keyDecryptionKey
     )
     const decryptedKey = EncryptionKeyFormatter.fromJSONString(
-      encodeUTF8(plainTextEncryptionKey)
+      encodeUTF8(decryptedKeyBytes)
     )
 
-    const decryptedData = this.encryptor.decrypt(
+    const decryptedDataBytes = this.encryptor.decrypt(
       encryptedData.cipherText,
       encryptedData.nonce,
       decryptedKey
@@ -76,7 +76,7 @@ export class VaultItemEncryptor {
 
     return {
       id,
-      data: JSON.parse(encodeUTF8(decryptedData)),
+      data: JSON.parse(encodeUTF8(decryptedDataBytes)),
       encryptionKey: decryptedKey
     }
   }
@@ -140,6 +140,9 @@ export class VaultItemEncryptor {
       }
     })
 
+    // JSON.stringify does not always return keys in the same order
+    // so we use a special "stable" stringify method here to ensure
+    // a future hmac with the same inputs will match this one
     const message = stringify({
       items: sortedItems,
       numberOfItems: sortedItems.length,
