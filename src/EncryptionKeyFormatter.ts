@@ -1,6 +1,11 @@
 import * as base32 from "hi-base32"
 import QRCode from "qrcode"
-import { decodeBase64, decodeUTF8, encodeBase64 } from "tweetnacl-util"
+import {
+  decodeBase64,
+  decodeUTF8,
+  encodeUTF8,
+  encodeBase64
+} from "tweetnacl-util"
 import {
   EncryptionAlgorithm,
   EncryptionKey,
@@ -39,7 +44,7 @@ export class EncryptionKeyFormatter {
   // Base32 is useful as its not case sensitive, making it easy for a human to type in a secret key into their device
   static toBase32(encryptionKey: EncryptionKey): string {
     const key = base32
-      .encode(encryptionKey.key)
+      .encode(encodeUTF8(encryptionKey.key))
       .toUpperCase()
       .replace(/(.{5})/g, "$1-")
 
@@ -57,11 +62,11 @@ export class EncryptionKeyFormatter {
 
   // Embedding an EncryptionKey in a QR code lets users scan them easily (nifty for copying your key to a new device)
   static toQRCode(encryptionKey: EncryptionKey, size: number): Promise<string> {
-    return stringToQRCode(JSON.stringify(encryptionKey), size)
+    return stringToQRCode(this.toJSONString(encryptionKey), size)
   }
 
   static fromQRCode(code: string): EncryptionKey {
-    return JSON.parse(code)
+    return this.fromJSONString(code)
   }
 }
 
