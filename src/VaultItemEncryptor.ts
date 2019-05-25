@@ -1,4 +1,11 @@
 import stringify from "json-stable-stringify"
+import {
+  decodeBase64,
+  decodeUTF8,
+  encodeBase64,
+  encodeUTF8
+} from "tweetnacl-util"
+import { EncryptionKeyFormatter } from "./EncryptionKeyFormatter"
 import { NaClEncryptor } from "./NaClEncryptor"
 import { EncryptionKey, Encryptor, KeyPair } from "./types/crypto"
 import { EncryptedVaultItem, VaultItem } from "./types/vaultItem"
@@ -29,18 +36,19 @@ export class VaultItemEncryptor {
     keyEncryptionKey: EncryptionKey
   ): EncryptedVaultItem {
     const { id, data, encryptionKey } = item
+
     const encryptedData = this.encryptor.encrypt(
-      JSON.stringify(data),
+      decodeUTF8(JSON.stringify(data)),
       encryptionKey
     )
 
     const encryptedKey = this.encryptor.encrypt(
-      JSON.stringify(encryptionKey),
+      decodeUTF8(EncryptionKeyFormatter.toJSONString(encryptionKey)),
       keyEncryptionKey
     )
 
     return {
-      id: item.id,
+      id,
       encryptedData,
       encryptedKey
     }
@@ -51,25 +59,24 @@ export class VaultItemEncryptor {
     keyDecryptionKey: EncryptionKey
   ): VaultItem<T> {
     const { id, encryptedKey, encryptedData } = item
-    const decryptedKey = JSON.parse(
-      this.encryptor.decrypt(
-        encryptedKey.cipherText,
-        encryptedKey.nonce,
-        keyDecryptionKey
-      )
+    const plainTextEncryptionKey = this.encryptor.decrypt(
+      encryptedKey.cipherText,
+      encryptedKey.nonce,
+      keyDecryptionKey
+    )
+    const decryptedKey = EncryptionKeyFormatter.fromJSONString(
+      encodeUTF8(plainTextEncryptionKey)
     )
 
-    const decryptedData = JSON.parse(
-      this.encryptor.decrypt(
-        encryptedData.cipherText,
-        encryptedData.nonce,
-        decryptedKey
-      )
+    const decryptedData = this.encryptor.decrypt(
+      encryptedData.cipherText,
+      encryptedData.nonce,
+      decryptedKey
     )
 
     return {
       id,
-      data: decryptedData,
+      data: JSON.parse(encodeUTF8(decryptedData)),
       encryptionKey: decryptedKey
     }
   }
@@ -100,7 +107,12 @@ export class VaultItemEncryptor {
   ): Array<VaultItem<T>> {
     if (lastModified != null && hmac != null) {
       const newHmac = this.hmac(items, keyDecryptionKey, lastModified)
-      if (!this.encryptor.constantTimeEquals(hmac, newHmac)) {
+      if (
+        !this.encryptor.constantTimeEquals(
+          decodeBase64(hmac),
+          decodeBase64(newHmac)
+        )
+      ) {
         throw new Error(
           "HMACs do not match. Vault items are either missing, or have been tampered with."
         )
@@ -134,6 +146,7 @@ export class VaultItemEncryptor {
       lastModified: timestamp
     })
 
-    return this.encryptor.hmac(message, keyEncryptionKey)
+    const result = this.encryptor.hmac(decodeUTF8(message), keyEncryptionKey)
+    return encodeBase64(result)
   }
 }

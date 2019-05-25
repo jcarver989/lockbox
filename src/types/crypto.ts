@@ -7,7 +7,7 @@ export type EncryptionAlgorithm = keyof typeof ENCRYPTION_ALGORITHMS
 
 /** An Encryption key - e.g. the user's master Vault Key or an indiviudal item's encryption key */
 export type EncryptionKey = {
-  key: string // base 64 encoded
+  key: Uint8Array
 
   // some encryption algorithms are picky about key lengths, so we tag
   // this key with the algorithm we intended to use it with
@@ -16,8 +16,8 @@ export type EncryptionKey = {
 
 /** Represents encrypted JSON data */
 export type EncryptedData = {
-  nonce: string
-  cipherText: string
+  nonce: Uint8Array
+  cipherText: Uint8Array
 }
 
 /** A Public / Private Keypair */
@@ -42,26 +42,30 @@ export interface Encryptor {
   generateKeyPair(): KeyPair
 
   // EncryptedData fields should be base64 encoded to allow sending of encrypted data over HTTPS
-  encrypt(message: string, key: EncryptionKey): EncryptedData
+  encrypt(message: Uint8Array, key: EncryptionKey): EncryptedData
 
   // Should return utf8 (not base64) encoded string as plaintext might contain utf8 characters
-  decrypt(message: string, nonce: string, key: EncryptionKey): string
+  decrypt(
+    message: Uint8Array,
+    nonce: Uint8Array,
+    key: EncryptionKey
+  ): Uint8Array
 
   assymetricEncrypt(
-    message: string,
+    message: Uint8Array,
     theirPublicKey: EncryptionKey,
     myPrivateKey: EncryptionKey
   ): EncryptedData
 
   assymetricDecrypt(
-    message: string,
-    nonce: string,
+    message: Uint8Array,
+    nonce: Uint8Array,
     theirPublicKey: EncryptionKey,
     myPrivateKey: EncryptionKey
-  ): string
+  ): Uint8Array
 
   // To avoid timing attacks, make sure you use this to compare HMACs, not ==.
-  constantTimeEquals(a: string, b: string): boolean
+  constantTimeEquals(a: Uint8Array, b: Uint8Array): boolean
 
-  hmac(message: string, key: EncryptionKey): string
+  hmac(message: Uint8Array, key: EncryptionKey): Uint8Array
 }

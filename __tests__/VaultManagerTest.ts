@@ -9,11 +9,12 @@ import { StubEncryptor } from "../src/StubEncryptor"
 import { VaultItem } from "../src/types/vaultItem"
 import { VaultItemEncryptor } from "../src/VaultItemEncryptor"
 import { VaultManager } from "../src/VaultManager"
+import { decodeUTF8, encodeUTF8, encodeBase64 } from "tweetnacl-util"
 
 test("should create a vault", () => {
   const encryptor = new StubEncryptor()
-    .withEncryptionKeyGenerator(() => "encryption-key-123")
-    .withHMACGenerator((message, key) => "hmac-123")
+    .withEncryptionKeyGenerator(() => decodeUTF8("encryption-key-123"))
+    .withHMACGenerator((message, key) => decodeUTF8("hmac123"))
 
   const vaultManager = new VaultManager<StubItem>(
     new VaultItemEncryptor(encryptor),
@@ -22,13 +23,13 @@ test("should create a vault", () => {
 
   const { vault, vaultKey } = vaultManager.create()
   expect(vault).toEqual(anEmptyVault())
-  expect(vaultKey.key).toEqual("encryption-key-123")
+  expect(encodeUTF8(vaultKey.key)).toEqual("encryption-key-123")
 })
 
 test("should add item to the Vault", () => {
   const encryptor = new StubEncryptor()
-    .withEncryptionKeyGenerator(() => "encryption-key-123")
-    .withHMACGenerator((message, key) => "hmac-123")
+    .withEncryptionKeyGenerator(() => decodeUTF8("encryption-key-123"))
+    .withHMACGenerator((message, key) => decodeUTF8("hmac123"))
 
   const vaultKey = encryptor.generateEncryptionKey()
 
@@ -43,15 +44,15 @@ test("should add item to the Vault", () => {
   const response = vaultManager.addOrUpdateItem(encryptedVault, item, vaultKey)
 
   expect(response.items.length).toEqual(1)
-  expect(response.hmacOfItems).toEqual("hmac-123")
+  expect(response.hmacOfItems).toEqual(encodeBase64(decodeUTF8("hmac123")))
   expect(response.lastModified).toEqual(1000)
   expect(response.items[0].id).toEqual(item.id)
 })
 
 test("should delete an item", () => {
   const encryptor = new StubEncryptor()
-    .withEncryptionKeyGenerator(() => "encryption-key-123")
-    .withHMACGenerator((message, key) => "hmac-123")
+    .withEncryptionKeyGenerator(() => decodeUTF8("encryption-key-123"))
+    .withHMACGenerator((message, key) => decodeUTF8("hmac-123"))
 
   const vaultKey = encryptor.generateEncryptionKey()
 
@@ -68,7 +69,7 @@ test("should delete an item", () => {
   const response = vaultManager.deleteItem(encryptedVault, item, vaultKey)
 
   expect(response.items.length).toEqual(0)
-  expect(response.hmacOfItems).toEqual("hmac-123")
+  expect(response.hmacOfItems).toEqual(encodeBase64(decodeUTF8("hmac-123")))
   expect(response.lastModified).toEqual(1000)
   expect(response.items.length).toEqual(0)
 })

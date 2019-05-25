@@ -1,17 +1,18 @@
 import { aVaultItem } from "../src"
 import { EncryptionKey, ENCRYPTION_ALGORITHMS } from "../src/types/crypto"
 import { VaultItemEncryptor } from "../src/VaultItemEncryptor"
+import { decodeBase64 } from "tweetnacl-util"
 
 const encryptor = new VaultItemEncryptor()
 // some "random" 256-bit keys
 
 const vaultKey: EncryptionKey = {
-  key: "aaaaaaaaaaaKKflff11EjRDqbHHTkZ0XMMHiqXFsZxg=",
+  key: decodeBase64("aaaaaaaaaaaKKflff11EjRDqbHHTkZ0XMMHiqXFsZxg="),
   algorithm: ENCRYPTION_ALGORITHMS.xSalsa20Poly1305
 }
 
 const encryptionKey: EncryptionKey = {
-  key: "p6GBVxOkWhjKKflff11EjRDqbHHTkZ0XMMHiqXFsZxg=",
+  key: decodeBase64("p6GBVxOkWhjKKflff11EjRDqbHHTkZ0XMMHiqXFsZxg="),
   algorithm: ENCRYPTION_ALGORITHMS.xSalsa20Poly1305
 }
 
