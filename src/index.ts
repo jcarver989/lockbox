@@ -5,6 +5,7 @@ import {
   EncryptedVaultItemEncryptionKey,
   VaultItem
 } from "./types/VaultItem"
+import { decodeUTF8 } from "tweetnacl-util"
 
 export function anEmptyVault<T>(): Vault<T> {
   return {
@@ -52,7 +53,7 @@ export function anEncryptedVaultItemEncryptionKey(): EncryptedVaultItemEncryptio
 
 export function someEncryptedData(): EncryptedData {
   return {
-    cipherText: "cipher",
-    nonce: "123"
+    cipherText: decodeUTF8("cipher"),
+    nonce: decodeUTF8("123")
   }
 }

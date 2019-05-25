@@ -41,10 +41,8 @@ export interface Encryptor {
   // Use this whenever you need to generate an asymmetric key pair
   generateKeyPair(): KeyPair
 
-  // EncryptedData fields should be base64 encoded to allow sending of encrypted data over HTTPS
   encrypt(message: Uint8Array, key: EncryptionKey): EncryptedData
 
-  // Should return utf8 (not base64) encoded string as plaintext might contain utf8 characters
   decrypt(
     message: Uint8Array,
     nonce: Uint8Array,
